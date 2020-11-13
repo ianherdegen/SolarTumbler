@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from boats.models import Type, Boat
+from SolarTumbler.models import Item, LogEntry
 
 # Register your models here.
 
-admin.site.register(Type)
-admin.site.register(Boat)
+admin.site.register(Item)
+admin.site.register(LogEntry)

@@ -1,9 +1,9 @@
 from django.forms import ModelForm
-from boats.models import Type
+from SolarTumbler.models import Item
 
 
 # Create the form class.
-class TypeForm(ModelForm):
+class ItemForm(ModelForm):
     class Meta:
-        model = Type
+        model = Item
         fields = '__all__'

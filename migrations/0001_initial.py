@@ -14,20 +14,18 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Type',
+            name='Item',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, validators=[django.core.validators.MinLengthValidator(2, 'Type must be greater than 1 character')])),
+                ('name', models.CharField(max_length=200, validators=[django.core.validators.MinLengthValidator(2, 'Item must be greater than 1 character')])),
             ],
         ),
         migrations.CreateModel(
-            name='Boat',
+            name='LogEntry',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('nickname', models.CharField(max_length=200, validators=[django.core.validators.MinLengthValidator(2, 'Nickname must be greater than 1 character')])),
-                ('length', models.PositiveIntegerField()),
-                ('knots', models.PositiveIntegerField()),
-                ('type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='boats.type')),
+                ('item', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='SolarTumbler.item')),
             ],
         ),
     ]
