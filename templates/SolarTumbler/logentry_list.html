@@ -16,7 +16,7 @@
     <p>There are no log entries in the library.</p>
   {% endif %}
   <p>
-    {% if type_count > 0 %}
+    {% if item_count > 0 %}
       <a href="{% url 'SolarTumbler:logentry_create' %}">Add a log entry</a>
     {% else %}
       Please add an item before you add a log entry.
