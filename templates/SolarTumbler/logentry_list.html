@@ -1,0 +1,29 @@
+{% extends "base_bootstrap.html" %}
+
+{% block content %}
+  <h1>Log Entry List</h1>
+  {% if logentry_list %}
+  <ul>
+    {% for logentry in logentry_list %}
+      <li>
+          {{ logentry.nickname }} ({{ logentry.item }})
+          (<a href="{% url 'SolarTumbler:logentry_update' logentry.id %}">Update</a> |
+          <a href="{% url 'SolarTumbler:logentry_delete' logentry.id %}">Delete</a>) <br/>
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p>There are no log entries in the library.</p>
+  {% endif %}
+  <p>
+    {% if type_count > 0 %}
+      <a href="{% url 'SolarTumbler:logentry_create' %}">Add a log entry</a>
+    {% else %}
+      Please add an item before you add a log entry.
+    {% endif %}
+  </p>
+  <p>
+  <a href="{% url 'SolarTumbler:item_list' %}">View items</a> ({{ item_count }}) |
+    <a href="{% url 'SolarTumbler:item_create' %}">Add an item</a>
+  </p>
+{% endblock %}
