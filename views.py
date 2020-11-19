@@ -2,10 +2,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
-from SolarTumbler.models import LogEntry, Item
-from SolarTumbler.forms import ItemForm
+from SolarTumbler.models import LogEntry, Item, Comment
+from SolarTumbler.forms import ItemForm, CommentForm
 
 # Create your views here.
 
@@ -18,6 +18,22 @@ class LogEntryList(LoginRequiredMixin, View):
         ctx = {'item_count': mc, 'logentry_list': al}
         return render(request, 'SolarTumbler/logentry_list.html', ctx)
 
+class LogEntryDetailView(LoginRequiredMixin, View):
+    model = LogEntry
+    template_name = "SolarTumbler/logentry_detail.html"
+    def get(self, request, pk) :
+        x = LogEntry.objects.get(id=pk)
+        comments = Comment.objects.filter(logentry=x).order_by('-updated_at')
+        comment_form = CommentForm()
+        context = { 'logentry' : x, 'comments': comments, 'comment_form': comment_form }
+        return render(request, self.template_name, context)
+
+class CommentCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk) :
+        f = get_object_or_404(LogEntry, id=pk)
+        comment = Comment(text=request.POST['comment'], logentry=f)
+        comment.save()
+        return redirect(reverse('forums:forum_detail', args=[pk]))
 
 class ItemView(LoginRequiredMixin, View):
     def get(self, request):

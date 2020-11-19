@@ -28,4 +28,18 @@ class Migration(migrations.Migration):
                 ('item', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='SolarTumbler.item')),
             ],
         ),
+        migrations.CreateModel(
+            name='Comment',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('text', models.TextField(validators=[django.core.validators.MinLengthValidator(3, 'Comment must be greater than 3 characters')])),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+        ),
+        migrations.AddField(
+            model_name='comment',
+            name='logentry',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='SolarTumbler.LogEntry'),
+        ),
     ]

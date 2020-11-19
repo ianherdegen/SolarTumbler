@@ -6,7 +6,7 @@
   <ul>
     {% for logentry in logentry_list %}
       <li>
-          {{ logentry.nickname }} ({{ logentry.item }})
+          <a href="{% url 'SolarTumbler:logentry_detail'  logentry.id %}">{{ logentry.nickname }} ({{ logentry.item }})</a>
           (<a href="{% url 'SolarTumbler:logentry_update' logentry.id %}">Update</a> |
           <a href="{% url 'SolarTumbler:logentry_delete' logentry.id %}">Delete</a>) <br/>
       </li>
