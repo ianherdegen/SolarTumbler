@@ -31,9 +31,9 @@ class LogEntryDetailView(LoginRequiredMixin, View):
 class CommentCreateView(LoginRequiredMixin, View):
     def post(self, request, pk) :
         f = get_object_or_404(LogEntry, id=pk)
-        comment = Comment(text=request.POST['comment'], logentry=f)
+        comment = Comment(text=request.POST['comment'], owner=request.user, logentry=f)
         comment.save()
-        return redirect(reverse('forums:forum_detail', args=[pk]))
+        return redirect(reverse('SolarTumbler:logentry_detail', args=[pk]))
 
 class ItemView(LoginRequiredMixin, View):
     def get(self, request):
@@ -111,7 +111,7 @@ class ItemDelete(LoginRequiredMixin, View):
 # value in the constructor attributes
 class LogEntryCreate(LoginRequiredMixin, CreateView):
     model = LogEntry
-    fields = '__all__'
+    fields = ['nickname','item']
     success_url = reverse_lazy('SolarTumbler:all')
 
 
