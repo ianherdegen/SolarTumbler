@@ -1,8 +1,8 @@
-{% extends "base_bootstrap.html" %}
+{% extends "compost_menu.html" %}
 {% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
 {% block content %}
 <h1>
-{{ logentry.item }}
+<strong>{{ logentry.owner }}</strong> added <strong>{{ logentry.item }}</strong> to <strong>{{ logentry.group }}'s</strong> composter.
 </h1>
 {% if user.is_authenticated %}
 <br clear="all"/>

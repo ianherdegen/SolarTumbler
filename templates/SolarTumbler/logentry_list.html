@@ -1,14 +1,36 @@
-{% extends "base_bootstrap.html" %}
+{% extends "compost_menu.html" %}
 
 {% block content %}
   <h1>Log Entry List</h1>
   {% if logentry_list %}
   <ul>
     {% for logentry in logentry_list %}
-      <li>
-          <a href="{% url 'SolarTumbler:logentry_detail'  logentry.id %}">{{ logentry.nickname }} ({{ logentry.item }})</a>
-          (<a href="{% url 'SolarTumbler:logentry_update' logentry.id %}">Update</a> |
+      <li class="list-group-item justify-content-between">
+          {% if user.is_authenticated %}
+            <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
+            <a href="#" onclick=
+                "favPost('{% url 'SolarTumbler:logentry_unfavorite' logentry.id %}', {{ logentry.id }} );return false;"
+                {% if logentry.id not in favorites %} style="display: none;" {% endif %}
+                id="favorite_star_{{logentry.id}}">
+            <span class="fa-stack" style=z"vertical-align: middle;">
+            <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
+            <i class="fa fa-star-o fa-stack-1x"></i>
+            </span>
+            </a>
+            <!-- the second href -->
+            <a href="#" onclick=
+                 "favPost('{% url 'SolarTumbler:logentry_favorite' logentry.id %}', {{ logentry.id }} );return false;"
+                {% if logentry.id in favorites %} style="display: none;" {% endif %}
+                id="unfavorite_star_{{logentry.id}}">
+            <span class="fa-stack" style="vertical-align: middle;">
+            <i class="fa fa-star fa-stack-1x" style="display: none; color: orange;"></i>
+            <i class="fa fa-star-o fa-stack-1x"></i>
+            </span>
+            </a>
+          <a href="{% url 'SolarTumbler:logentry_detail'  logentry.id %}"><strong>{{ logentry.owner }}</strong> added <strong>{{ logentry.item }}</strong> to <strong>{{ logentry.group }}'s</strong> composter.</a>
+          (<a href="{% url 'SolarTumbler:logentry_update' logentry.id %}">Edit</a> |
           <a href="{% url 'SolarTumbler:logentry_delete' logentry.id %}">Delete</a>) <br/>
+            {% endif %}
       </li>
     {% endfor %}
   </ul>
@@ -16,14 +38,26 @@
     <p>There are no log entries in the library.</p>
   {% endif %}
   <p>
-    {% if item_count > 0 %}
-      <a href="{% url 'SolarTumbler:logentry_create' %}">Add a log entry</a>
+    {% if group_count > 0 %}
+      <a href="{% url 'SolarTumbler:logentry_create' %}" class="btn btn-primary">Add a log entry</a>
     {% else %}
-      Please add an item before you add a log entry.
+      Please add an group before you add a log entry.
     {% endif %}
   </p>
   <p>
-  <a href="{% url 'SolarTumbler:item_list' %}">View items</a> ({{ item_count }}) |
-    <a href="{% url 'SolarTumbler:item_create' %}">Add an item</a>
+  <a href="{% url 'SolarTumbler:group_list' %}" class="btn btn-primary">View groups ({{ group_count }})</a> |
+    <a href="{% url 'SolarTumbler:group_create' %}" class="btn btn-primary">Add a group</a>
   </p>
+<script>
+function favPost(url, logentry_id) {
+    console.log('Requesting JSON');
+    $.post(url, {},  function(rowz){
+        console.log(url, 'finished');
+        $("#unfavorite_star_"+logentry_id).toggle();
+        $("#favorite_star_"+logentry_id).toggle();
+    }).fail(function(xhr) {
+        alert('Url failed with '+xhr.status+' '+url);
+    });
+}
+</script>
 {% endblock %}

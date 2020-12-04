@@ -14,10 +14,10 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Item',
+            name='Group',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, validators=[django.core.validators.MinLengthValidator(2, 'Item must be greater than 1 character')])),
+                ('name', models.CharField(max_length=200, validators=[django.core.validators.MinLengthValidator(2, 'Group must be greater than 1 character')])),
             ],
         ),
         migrations.CreateModel(
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('nickname', models.CharField(max_length=200, validators=[django.core.validators.MinLengthValidator(2, 'Nickname must be greater than 1 character')])),
-                ('item', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='SolarTumbler.item')),
+                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='SolarTumbler.group')),
             ],
         ),
         migrations.CreateModel(

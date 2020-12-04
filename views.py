@@ -3,19 +3,22 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
-
-from SolarTumbler.models import LogEntry, Item, Comment
-from SolarTumbler.forms import ItemForm, CommentForm
+from django.http import HttpResponse
+from SolarTumbler.models import LogEntry, Group, Comment, Fav
+from SolarTumbler.forms import GroupForm, CommentForm
 
 # Create your views here.
 
 
 class LogEntryList(LoginRequiredMixin, View):
     def get(self, request):
-        mc = Item.objects.all().count()
+        mc = Group.objects.all().count()
         al = LogEntry.objects.all()
-
-        ctx = {'item_count': mc, 'logentry_list': al}
+        favorites = list()
+        if request.user.is_authenticated:
+            rows = request.user.favorite_logentrys.values('id')
+            favorites = [ row['id'] for row in rows ]
+        ctx = {'group_count': mc, 'logentry_list': al, 'favorites': favorites}
         return render(request, 'SolarTumbler/logentry_list.html', ctx)
 
 class LogEntryDetailView(LoginRequiredMixin, View):
@@ -35,51 +38,51 @@ class CommentCreateView(LoginRequiredMixin, View):
         comment.save()
         return redirect(reverse('SolarTumbler:logentry_detail', args=[pk]))
 
-class ItemView(LoginRequiredMixin, View):
+class GroupView(LoginRequiredMixin, View):
     def get(self, request):
-        ml = Item.objects.all()
-        ctx = {'item_list': ml}
-        return render(request, 'SolarTumbler/item_list.html', ctx)
+        ml = Group.objects.all()
+        ctx = {'group_list': ml}
+        return render(request, 'SolarTumbler/group_list.html', ctx)
 
 
 # We use reverse_lazy() because we are in "constructor attribute" code
 # that is run before urls.py is completely loaded
-class ItemCreate(LoginRequiredMixin, View):
-    template = 'SolarTumbler/item_form.html'
+class GroupCreate(LoginRequiredMixin, View):
+    template = 'SolarTumbler/group_form.html'
     success_url = reverse_lazy('SolarTumbler:all')
 
     def get(self, request):
-        form = ItemForm()
+        form = GroupForm()
         ctx = {'form': form}
         return render(request, self.template, ctx)
 
     def post(self, request):
-        form = ItemForm(request.POST)
+        form = GroupForm(request.POST)
         if not form.is_valid():
             ctx = {'form': form}
             return render(request, self.template, ctx)
 
-        item = form.save()
+        group = form.save()
         return redirect(self.success_url)
 
 
-# ItemUpdate has code to implement the get/post/validate/store flow
+# GroupUpdate has code to implement the get/post/validate/store flow
 # LogEntryUpdate (below) is doing the same thing with no code
 # and no form by extending UpdateView
-class ItemUpdate(LoginRequiredMixin, View):
-    model = Item
+class GroupUpdate(LoginRequiredMixin, View):
+    model = Group
     success_url = reverse_lazy('SolarTumbler:all')
-    template = 'SolarTumbler/item_form.html'
+    template = 'SolarTumbler/group_form.html'
 
     def get(self, request, pk):
-        item = get_object_or_404(self.model, pk=pk)
-        form = ItemForm(instance=item)
+        group = get_object_or_404(self.model, pk=pk)
+        form = GroupForm(instance=group)
         ctx = {'form': form}
         return render(request, self.template, ctx)
 
     def post(self, request, pk):
-        item = get_object_or_404(self.model, pk=pk)
-        form = ItemForm(request.POST, instance=item)
+        group = get_object_or_404(self.model, pk=pk)
+        form = GroupForm(request.POST, instance=group)
         if not form.is_valid():
             ctx = {'form': form}
             return render(request, self.template, ctx)
@@ -88,20 +91,20 @@ class ItemUpdate(LoginRequiredMixin, View):
         return redirect(self.success_url)
 
 
-class ItemDelete(LoginRequiredMixin, View):
-    model = Item
+class GroupDelete(LoginRequiredMixin, View):
+    model = Group
     success_url = reverse_lazy('SolarTumbler:all')
-    template = 'SolarTumbler/item_confirm_delete.html'
+    template = 'SolarTumbler/group_confirm_delete.html'
 
     def get(self, request, pk):
-        item = get_object_or_404(self.model, pk=pk)
-        form = ItemForm(instance=item)
-        ctx = {'item': item}
+        group = get_object_or_404(self.model, pk=pk)
+        form = GroupForm(instance=group)
+        ctx = {'group': group}
         return render(request, self.template, ctx)
 
     def post(self, request, pk):
-        item = get_object_or_404(self.model, pk=pk)
-        item.delete()
+        group = get_object_or_404(self.model, pk=pk)
+        group.delete()
         return redirect(self.success_url)
 
 
@@ -109,15 +112,19 @@ class ItemDelete(LoginRequiredMixin, View):
 # These views do not need a form because CreateView, etc.
 # Build a form object dynamically based on the fields
 # value in the constructor attributes
-class LogEntryCreate(LoginRequiredMixin, CreateView):
-    model = LogEntry
-    fields = ['nickname','item']
-    success_url = reverse_lazy('SolarTumbler:all')
+# class LogEntryCreate(LoginRequiredMixin, CreateView):
+#     model = LogEntry
+#     fields = ['item','group']
+#     success_url = reverse_lazy('SolarTumbler:all')
 
+class LogEntryCreate(LoginRequiredMixin, CreateView):
+        model = LogEntry
+        fields = ['item','group','owner']
+        success_url = reverse_lazy('SolarTumbler:all')
 
 class LogEntryUpdate(LoginRequiredMixin, UpdateView):
     model = LogEntry
-    fields = '__all__'
+    fields = ['item','group','owner']
     success_url = reverse_lazy('SolarTumbler:all')
 
 
@@ -134,3 +141,33 @@ class LogEntryDelete(LoginRequiredMixin, DeleteView):
 # References
 
 # https://docs.djangoproject.com/en/3.0/ref/class-based-views/generic-editing/#createview
+
+# csrf exemption in class based views
+# https://stackoverflow.com/questions/16458166/how-to-disable-djangos-csrf-validation
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.db.utils import IntegrityError
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AddFavoriteView(LoginRequiredMixin, View):
+    def post(self, request, pk) :
+        print("Add PK",pk)
+        t = get_object_or_404(LogEntry, id=pk)
+        fav = Fav(owner=request.user, logentry=t)
+        try:
+            fav.save()  # In case of duplicate key
+        except IntegrityError as e:
+            pass
+        return HttpResponse()
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteFavoriteView(LoginRequiredMixin, View):
+    def post(self, request, pk) :
+        print("Delete PK",pk)
+        t = get_object_or_404(LogEntry, id=pk)
+        try:
+            fav = Fav.objects.get(owner=request.user, logentry=t).delete()
+        except Fav.DoesNotExist as e:
+            pass
+
+        return HttpResponse()

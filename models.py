@@ -3,10 +3,21 @@ from django.core.validators import MinLengthValidator
 from django.contrib.auth.models import User
 from django.conf import settings
 
-class Item(models.Model):
+ITEM_CHOICES = (
+    ('Cardboard','Cardboard'),
+    ('Fruit Waste', 'Fruit Waste'),
+    ('Vegetable Waste','Vegetable Waste'),
+    ('Leftovers','Leftovers'),
+    ('Coffee Grounds','Coffee Grounds'),
+    ('Yard Waste','Yard Waste'),
+    ('Animal Waste','Animal Waste'),
+    ('Egg Shells','Egg Shells'),
+)
+
+class Group(models.Model):
     name = models.CharField(
             max_length=200,
-            validators=[MinLengthValidator(2, "Item must be greater than 1 character")]
+            validators=[MinLengthValidator(2, "Group must be greater than 1 character")]
     )
 
     def __str__(self):
@@ -17,14 +28,25 @@ class LogEntry(models.Model):
             max_length=200,
             validators=[MinLengthValidator(2, "Nickname must be greater than 1 character")]
     )
-    item = models.ForeignKey('Item', on_delete=models.CASCADE, null=False)
+    item = models.CharField(max_length=16, choices=ITEM_CHOICES, default='Cardboard')
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, null=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE, related_name='logentrys_owned')
     comments = models.ManyToManyField(settings.AUTH_USER_MODEL,
         through='Comment', related_name='logentry_comments')
+    favorites = models.ManyToManyField(settings.AUTH_USER_MODEL,
+        through='Fav', related_name='favorite_logentrys')
 
     def __str__(self):
-        return self.nickname
+        return self.item
+
+class Fav(models.Model) :
+    logentry = models.ForeignKey(LogEntry, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    # https://docs.djangoproject.com/en/3.0/ref/models/options/#unique-together
+    class Meta:
+        unique_together = ('logentry', 'owner')
 
 class Comment(models.Model) :
     text = models.TextField(

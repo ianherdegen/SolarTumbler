@@ -1,12 +1,12 @@
 from django.forms import ModelForm
 from django import forms
-from SolarTumbler.models import Item
+from SolarTumbler.models import Group
 
 
 # Create the form class.
-class ItemForm(ModelForm):
+class GroupForm(ModelForm):
     class Meta:
-        model = Item
+        model = Group
         fields = '__all__'
 
 class CommentForm(forms.Form):
