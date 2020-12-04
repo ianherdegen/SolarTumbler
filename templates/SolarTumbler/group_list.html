@@ -1,0 +1,22 @@
+{% extends "compost_menu.html" %}
+
+{% block content %}
+  <h1>Group List</h1>
+  {% if group_list %}
+  <ul>
+    {% for group in group_list %}
+      <li class="list-group-item justify-content-between">
+          {{ group.name }}
+         (<a href="{% url 'SolarTumbler:group_update' group.id %}">Edit</a> |
+          <a href="{% url 'SolarTumbler:group_delete' group.id %}">Delete</a>)
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p>There are no groups in the library.</p>
+  {% endif %}
+  <p><a href="{% url 'SolarTumbler:group_create' %}" class="btn btn-primary">Add a group</a></p>
+  <p>
+    <a href="{% url 'SolarTumbler:all' %}" class="btn btn-primary">Back to log entries</a>
+  </p>
+{% endblock %}
